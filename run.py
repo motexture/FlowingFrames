@@ -175,6 +175,7 @@ class VideoGenerator:
                 encode_video(self.video_path, self.encoded_path, get_video_height(self.video_path))
                 os.remove(self.video_path)
             except:
+                self.encoded_path = self.video_path
                 pass
 
             return self.encoded_path
