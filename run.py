@@ -226,7 +226,7 @@ with gr.Blocks() as iface:
             guidance_scale = gr.Slider(label="Guidance Scale", minimum=1.0, maximum=30.0, step=0.1, value=12)
 
             gr.Markdown("## Model Information")
-            gr.Markdown("<small>Recommended: 1024x576 resolution. Other resolutions might work as well, however they require testing..</small>")
+            gr.Markdown("<small>Recommended: 1024x576 resolution. Other resolutions might work as well, however they require testing.</small>")
 
             width = gr.Slider(label="Width", minimum=64, maximum=1280, step=64, value=1024)
             height = gr.Slider(label="Height", minimum=64, maximum=1280, step=64, value=576)
