@@ -137,7 +137,8 @@ class VideoGenerator:
 
     def initialize_pipeline(self, model):  
         print("Loading pipeline...")
-        pipeline = FluxDiffPipeline.from_pretrained(pretrained_model_name_or_path=model).to(device=self.device, dtype=torch.float16)
+        
+        pipeline = FluxDiffPipeline.from_pretrained(pretrained_model_name_or_path=model, use_safetensors=False).to(device=self.device, dtype=torch.float16)
         pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config, timestep_spacing="trailing", algorithm_type="sde-dpmsolver++")
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.vae.enable_slicing()
@@ -250,7 +251,7 @@ with gr.Blocks() as iface:
         with gr.Column(scale=2):
             video_output = gr.Video(label="Generated Video")
             generate_initial_button = gr.Button("Generate Initial Video")
-            extend_button = gr.Button("Extend Video", interactive=False)  # Start as disabled
+            extend_button = gr.Button("Extend Video", interactive=False)
 
         def on_generate_initial(prompt, negative_prompt, guidance_scale, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, seed, interpolation_strength):
             global initial_generated

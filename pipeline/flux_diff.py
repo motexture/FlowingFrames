@@ -20,7 +20,7 @@ import torch
 from typing import List, Optional, Union
 from models.unet import FluxDiff
 from transformers import CLIPTextModel, CLIPTokenizer, CLIPTextModelWithProjection
-from diffusers import DiffusionPipeline
+from pipeline.pipeline_utils import DiffusionPipeline
 from diffusers.loaders import LoraLoaderMixin, TextualInversionLoaderMixin
 from diffusers.models import AutoencoderKL
 from diffusers.schedulers import DPMSolverMultistepScheduler
