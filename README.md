@@ -15,7 +15,7 @@ cd FluxDiff
 python -m venv venv
 source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 pip install -r requirements.txt
-python app.py
+python run.py
 ```
 
 Visit the provided URL in your browser to interact with the interface and start generating videos.
