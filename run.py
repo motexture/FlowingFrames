@@ -215,9 +215,9 @@ with gr.Blocks() as iface:
             height = gr.Slider(label="Height", minimum=64, maximum=1280, step=64, value=576)
 
             gr.Markdown("## Frame Settings")
-            gr.Markdown("<small>Recommended: 4 frames & 4 conditioning frames, or 6 frames & 4 conditioning frames. Other settings may need testing.</small>")
+            gr.Markdown("<small>Recommended: 6 frames & 4 conditioning frames, or 4 frames & 4 conditioning frames. Other settings may need testing.</small>")
 
-            num_frames = gr.Slider(label="Number of Frames", minimum=1, maximum=24, step=1, value=6)
+            num_frames = gr.Slider(label="Number of Frames", minimum=1, maximum=24, step=1, value=4)
             num_conditioning_frames = gr.Slider(label="Number of Conditioning Frames", minimum=1, maximum=8, step=1, value=4)
 
             gr.Markdown("## Inference Settings")
