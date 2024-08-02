@@ -30,17 +30,11 @@ https://github.com/user-attachments/assets/7c917ab7-7a65-4957-8500-e98b8fb3edb3
 https://github.com/user-attachments/assets/5c0dd5f0-7d4a-4326-bd06-62e1d521e1c3
 
 
-https://github.com/user-attachments/assets/91eed388-9e5a-4aa8-83e0-a0aee651f347
+https://github.com/user-attachments/assets/d3e07701-f30b-4e16-9869-d206e38adf78
 
 
 https://github.com/user-attachments/assets/7c15989c-6b1d-4ed8-b8ea-ed427fe0e60f
 
 
 https://github.com/user-attachments/assets/aa84b5d3-3df7-4279-8d19-5b5067007882
-
-
-
-
-
-
 
