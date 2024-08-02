@@ -18,7 +18,7 @@ import inspect
 import torch
 
 from typing import List, Optional, Union
-from models.unet import FluxDiff
+from models.unet import FlowingFrames
 from transformers import CLIPTextModel, CLIPTokenizer, CLIPTextModelWithProjection
 from pipeline.pipeline_utils import DiffusionPipeline
 from diffusers.loaders import LoraLoaderMixin, TextualInversionLoaderMixin
@@ -30,13 +30,7 @@ from diffusers.utils import (
 
 logger = logging.get_logger(__name__)
 
-
-EXAMPLE_DOC_STRING = """
-    TODO
-"""
-
-
-class FluxDiffPipeline(DiffusionPipeline, TextualInversionLoaderMixin, LoraLoaderMixin):
+class FlowingFramesPipeline(DiffusionPipeline, TextualInversionLoaderMixin, LoraLoaderMixin):
     def __init__(
         self,
         vae: AutoencoderKL,
@@ -44,7 +38,7 @@ class FluxDiffPipeline(DiffusionPipeline, TextualInversionLoaderMixin, LoraLoade
         text_encoder_2: CLIPTextModelWithProjection,
         tokenizer: CLIPTokenizer,
         tokenizer_2: CLIPTokenizer,
-        unet: FluxDiff,
+        unet: FlowingFrames,
         scheduler: DPMSolverMultistepScheduler
     ):
         super().__init__()
@@ -195,7 +189,6 @@ class FluxDiffPipeline(DiffusionPipeline, TextualInversionLoaderMixin, LoraLoade
 
         return prompt_embeds, negative_prompt_embeds, pooled_prompt_embeds, negative_pooled_prompt_embeds
 
-    
     def clear_previous_embeddings(self):
         self.previous_prompt_embeds = None
         self.previous_pooled_prompt_embeds = None

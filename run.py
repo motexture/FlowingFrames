@@ -7,7 +7,7 @@ import cv2
 import os
 import gradio as gr
 
-from pipeline.flux_diff import FluxDiffPipeline
+from pipeline.flowing_frames import FlowingFramesPipeline
 from diffusers.models.attention import BasicTransformerBlock
 from diffusers.models.attention_processor import AttnProcessor2_0
 from diffusers import DPMSolverMultistepScheduler
@@ -23,23 +23,6 @@ def match_contrast_and_brightness(current_latents, previous_latents):
     adjusted_latents = adjusted_latents.clip(-1, 1)
     
     return adjusted_latents
-
-def denormalize_to_image(normalized_tensor):
-    normalized_tensor = normalized_tensor.squeeze(1)
-
-    if normalized_tensor.is_cuda:
-        normalized_tensor = normalized_tensor.cpu()
-    
-    if normalized_tensor.dim() == 5:
-        normalized_tensor = normalized_tensor.squeeze(0)
-        
-    denormalized = (normalized_tensor + 1.0) * 127.5
-    denormalized = torch.clamp(denormalized, 0, 255)
-    
-    uint8_numpy = denormalized.to(torch.uint8).numpy()
-    uint8_numpy = np.squeeze(denormalized, axis=0)
-    
-    return uint8_numpy
 
 def denormalize(normalized_tensor):
     if normalized_tensor.is_cuda:
@@ -138,7 +121,7 @@ class VideoGenerator:
     def initialize_pipeline(self, model):  
         print("Loading pipeline...")
         
-        pipeline = FluxDiffPipeline.from_pretrained(pretrained_model_name_or_path=model, use_safetensors=False).to(device=self.device, dtype=torch.float16)
+        pipeline = FlowingFramesPipeline.from_pretrained(pretrained_model_name_or_path=model, use_safetensors=False).to(device=self.device, dtype=torch.float16)
         pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config, timestep_spacing="trailing", algorithm_type="sde-dpmsolver++")
         pipeline.enable_xformers_memory_efficient_attention()
         pipeline.vae.enable_slicing()
@@ -214,7 +197,7 @@ initial_generated = False
 with gr.Blocks() as iface:
     gr.Markdown("""
     <div style="text-align: center;">
-        <h1>FluxDiff</h1>
+        <h1>FlowingFrames</h1>
         <p>A text-to-video model that uses past frames for conditioning, enabling the generation of infinite-length videos.</p>
     </div>
     """)
@@ -281,5 +264,5 @@ with gr.Blocks() as iface:
         )
 
 if __name__ == "__main__":
-    video_gen.set_pipeline("motexture/FluxDiff")
+    video_gen.set_pipeline("motexture/FlowingFrames")
     iface.launch()

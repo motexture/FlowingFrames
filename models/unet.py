@@ -27,7 +27,7 @@ def print_state_dict_to_file(state_dict, filename):
         for name, param in state_dict.items():
             f.write(f'Layer: {name} | Size: {param.size()}\n')
 
-class FluxDiff(ModelMixin, ConfigMixin):
+class FlowingFrames(ModelMixin, ConfigMixin):
     _supports_gradient_checkpointing = True
 
     @register_to_config
