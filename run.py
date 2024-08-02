@@ -206,7 +206,7 @@ with gr.Blocks() as iface:
         with gr.Column(scale=1):
             prompt = gr.Textbox(label="Prompt", value="Darth Vader is surfing on the ocean")
             negative_prompt = gr.Textbox(label="Negative Prompt", value="")
-            guidance_scale = gr.Slider(label="Guidance Scale", minimum=1.0, maximum=30.0, step=0.1, value=12)
+            guidance_scale = gr.Slider(label="Guidance Scale", minimum=1.0, maximum=30.0, step=0.1, value=14)
 
             gr.Markdown("## Model Information")
             gr.Markdown("<small>Recommended: 1024x576 resolution. Other resolutions might work as well, however they require testing.</small>")
