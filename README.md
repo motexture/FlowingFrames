@@ -44,3 +44,7 @@ https://github.com/user-attachments/assets/aa84b5d3-3df7-4279-8d19-5b5067007882
 ## Extras
 
 You can use this GPT to generate highly detailed image prompts -> [Image Prompter](https://chatgpt.com/g/g-rRGhg9gA6-image-prompter)
+
+## Additional Info
+
+Spatial layers are from Stable Diffusion XL 1.0
