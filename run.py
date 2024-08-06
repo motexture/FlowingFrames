@@ -208,7 +208,7 @@ with gr.Blocks() as iface:
             negative_prompt = gr.Textbox(label="Negative Prompt", value="")
             guidance_scale = gr.Slider(label="Guidance Scale", minimum=1.0, maximum=30.0, step=0.1, value=14)
 
-            gr.Markdown("## Model Information")
+            gr.Markdown("## Resolution")
 
             width = gr.Slider(label="Width", minimum=768, maximum=1280, step=64, value=1024)
             height = gr.Slider(label="Height", minimum=768, maximum=1280, step=64, value=576)
