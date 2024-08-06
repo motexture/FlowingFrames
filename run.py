@@ -209,26 +209,22 @@ with gr.Blocks() as iface:
             guidance_scale = gr.Slider(label="Guidance Scale", minimum=1.0, maximum=30.0, step=0.1, value=14)
 
             gr.Markdown("## Model Information")
-            gr.Markdown("<small>Recommended: 1024x576 or 1152x640 resolution. Other resolutions might work as well, however they require testing.</small>")
 
             width = gr.Slider(label="Width", minimum=768, maximum=1280, step=64, value=1024)
             height = gr.Slider(label="Height", minimum=768, maximum=1280, step=64, value=576)
 
             gr.Markdown("## Frame Settings")
-            gr.Markdown("<small>Recommended: 6 frames & 4 conditioning frames, or 4 frames & 4 conditioning frames. Other settings may need testing.</small>")
 
-            num_frames = gr.Slider(label="Number of Frames", minimum=1, maximum=8, step=1, value=4)
-            num_conditioning_frames = gr.Slider(label="Number of Conditioning Frames", minimum=1, maximum=8, step=1, value=4)
+            num_frames = gr.Slider(label="Number of Frames", minimum=4, maximum=8, step=1, value=6)
+            num_conditioning_frames = gr.Slider(label="Number of Conditioning Frames", minimum=4, maximum=8, step=1, value=4)
 
             gr.Markdown("## Inference Settings")
-            gr.Markdown("<small>More inference steps generally increase motion. Adjust as needed.</small>")
 
             num_inference_steps = gr.Slider(label="Number of Inference Steps", minimum=1, maximum=100, step=1, value=30)
             fps = gr.Slider(label="FPS", minimum=1, maximum=60, step=1, value=6)
             seed = gr.Slider(label="Seed", minimum=-1, maximum=1000000, step=1, value=-1)
 
             gr.Markdown("## Interpolation")
-            gr.Markdown("<small>Interpolation 0.0: full strength to previous prompt. 1.0: full strength to new prompt.</small>")
 
             interpolation_strength = gr.Slider(label="Interpolation Strength", minimum=0.0, maximum=1.0, step=0.01, value=1.0)
         
