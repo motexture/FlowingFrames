@@ -226,7 +226,7 @@ with gr.Blocks() as iface:
 
             gr.Markdown("## Interpolation")
 
-            interpolation_strength = gr.Slider(label="Interpolation Strength", minimum=0.0, maximum=2.0, step=0.1, value=1.0)
+            interpolation_strength = gr.Slider(label="Interpolation Strength", minimum=0.0, maximum=1.0, step=0.1, value=1.0)
         
         with gr.Column(scale=2):
             video_output = gr.Video(label="Generated Video")
