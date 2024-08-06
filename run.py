@@ -210,8 +210,8 @@ with gr.Blocks() as iface:
 
             gr.Markdown("## Resolution")
 
-            width = gr.Slider(label="Width", minimum=768, maximum=1280, step=64, value=1024)
-            height = gr.Slider(label="Height", minimum=768, maximum=1280, step=64, value=576)
+            width = gr.Slider(label="Width", minimum=576, maximum=1280, step=64, value=1024)
+            height = gr.Slider(label="Height", minimum=576, maximum=1280, step=64, value=576)
 
             gr.Markdown("## Frame Settings")
 
