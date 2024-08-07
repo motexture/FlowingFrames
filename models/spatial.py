@@ -34,6 +34,7 @@ class SpatialTransformer(ModelMixin, ConfigMixin):
         upcast_attention: bool = False,
         norm_type: str = "layer_norm",
         norm_elementwise_affine: bool = True,
+        double_self_attention: bool = False,
     ):
         super().__init__()
 
@@ -71,6 +72,7 @@ class SpatialTransformer(ModelMixin, ConfigMixin):
                     upcast_attention=upcast_attention,
                     norm_type=norm_type,
                     norm_elementwise_affine=norm_elementwise_affine,
+                    double_self_attention=double_self_attention
                 )
                 for _ in range(num_layers)
             ]
@@ -94,7 +96,8 @@ class SpatialTransformer(ModelMixin, ConfigMixin):
         hidden_states = hidden_states.reshape(batch * frames, height * width, channel)
         hidden_states = self.proj_in(hidden_states)     
 
-        encoder_hidden_states = encoder_hidden_states.repeat_interleave(repeats=frames, dim=0)
+        if encoder_hidden_states is not None:
+            encoder_hidden_states = encoder_hidden_states.repeat_interleave(repeats=frames, dim=0)
 
         for block in self.transformer_blocks:
             hidden_states = block(

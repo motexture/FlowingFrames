@@ -19,6 +19,7 @@ import torch
 
 from typing import List, Optional, Union
 from models.unet import FlowingFrames
+from models.refiner import Refiner
 from transformers import CLIPTextModel, CLIPTokenizer, CLIPTextModelWithProjection
 from pipeline.pipeline_utils import DiffusionPipeline
 from diffusers.loaders import LoraLoaderMixin, TextualInversionLoaderMixin
@@ -39,7 +40,8 @@ class FlowingFramesPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lora
         tokenizer: CLIPTokenizer,
         tokenizer_2: CLIPTokenizer,
         unet: FlowingFrames,
-        scheduler: DPMSolverMultistepScheduler
+        scheduler: DPMSolverMultistepScheduler,
+        refiner: Refiner
     ):
         super().__init__()
 
@@ -50,7 +52,8 @@ class FlowingFramesPipeline(DiffusionPipeline, TextualInversionLoaderMixin, Lora
             tokenizer=tokenizer,
             tokenizer_2=tokenizer_2,
             unet=unet,
-            scheduler=scheduler
+            scheduler=scheduler,
+            refiner=refiner
         )
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.default_sample_size = self.unet.config.sample_size

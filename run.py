@@ -67,37 +67,6 @@ def set_torch_2_attn(unet):
 def set_processors(attentions):
     for attn in attentions: attn.set_processor(AttnProcessor2_0()) 
 
-def encode_video(input_file, output_file, height):
-    command = ['ffmpeg',
-               '-i', input_file,
-               '-c:v', 'libx264',
-               '-crf', '23',
-               '-preset', 'fast',
-               '-c:a', 'aac',
-               '-b:a', '128k',
-               '-movflags', '+faststart',
-               '-vf', f'scale=-1:{height}',
-               '-y',
-               output_file]
-    
-    subprocess.run(command, check=True)
-
-def get_video_height(input_file):
-    command = ['ffprobe', 
-               '-v', 'quiet', 
-               '-print_format', 'json', 
-               '-show_streams', 
-               input_file]
-
-    result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    video_info = json.loads(result.stdout)
-    
-    for stream in video_info.get('streams', []):
-        if stream['codec_type'] == 'video':
-            return stream['height']
-
-    return None
-
 def set_seed(seed):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
@@ -111,8 +80,7 @@ class VideoGenerator:
         self.device = "cuda"
         self.stacked_latents = None
         self.previous_latents = None
-        self.video_path = "outputs/concatenated_output.mp4"
-        self.encoded_path = "outputs/concatenated_output_encoded.mp4"
+        self.video_path = "outputs/output.mp4"
         os.makedirs("outputs", exist_ok=True)
 
     def set_pipeline(self, model):
@@ -123,12 +91,11 @@ class VideoGenerator:
         
         pipeline = FlowingFramesPipeline.from_pretrained(pretrained_model_name_or_path=model, use_safetensors=False).to(device=self.device, dtype=torch.float16)
         pipeline.scheduler = DPMSolverMultistepScheduler.from_config(pipeline.scheduler.config, timestep_spacing="trailing", algorithm_type="sde-dpmsolver++")
-        pipeline.enable_xformers_memory_efficient_attention()
         pipeline.vae.enable_slicing()
 
         return pipeline
 
-    def generate(self, prompt, negative_prompt, guidance_scale, reset, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, interpolation_strength):
+    def generate(self, prompt, negative_prompt, guidance_scale, reset, width, height, num_inference_steps, fps, interpolation_strength):
         if self.seed != -1:
             set_seed(self.seed)
 
@@ -138,7 +105,7 @@ class VideoGenerator:
                 negative_prompt=negative_prompt,
                 height=height,
                 width=width,
-                num_frames=num_frames,
+                num_frames=6,
                 num_inference_steps=num_inference_steps,
                 guidance_scale=guidance_scale,
                 device=self.device,
@@ -146,22 +113,20 @@ class VideoGenerator:
                 interpolation_strength=interpolation_strength
             )
             
-            self.stacked_latents = torch.cat((self.stacked_latents, latents), dim=2) if self.stacked_latents is not None else latents
-            latents = match_contrast_and_brightness(latents, self.stacked_latents)
-            self.previous_latents = latents[:, :, -num_conditioning_frames:, :, :]
+            if self.stacked_latents is not None:
+                self.stacked_latents = torch.cat((self.stacked_latents, latents), dim=2)
+                if self.stacked_latents.size(2) > 6 * 2:
+                    self.stacked_latents[:, :, -6 * 2:, :, :] = self.pipeline.refiner(self.stacked_latents[:, :, -6 * 2:, :, :])
+            else:
+                self.stacked_latents = latents
+            self.previous_latents = self.stacked_latents[:, :, -4:, :, :]
 
             if reset:
-                self.generate(prompt, negative_prompt, guidance_scale, False, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, interpolation_strength)
+                self.generate(prompt, negative_prompt, guidance_scale, False, width, height, num_inference_steps, fps, interpolation_strength)
 
-            save_video(self.decode(self.stacked_latents[:, :, num_frames + 1:, :, :]), self.video_path, fps)
-            try:
-                encode_video(self.video_path, self.encoded_path, get_video_height(self.video_path))
-                os.remove(self.video_path)
-            except:
-                self.encoded_path = self.video_path
-                pass
+            save_video(self.decode(self.stacked_latents[:, :, 7:, :, :]), self.video_path, fps)
 
-            return self.encoded_path
+            return self.video_path
         
     def decode(self, latents):
         latents = 1 / self.pipeline.vae.config.scaling_factor * latents
@@ -184,12 +149,12 @@ class VideoGenerator:
 
         return video.float()        
         
-    def reset_and_generate_initial(self, prompt, negative_prompt, guidance_scale, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, seed, interpolation_strength):
+    def reset_and_generate_initial(self, prompt, negative_prompt, guidance_scale, width, height, num_inference_steps, fps, seed, interpolation_strength):
         self.stacked_latents = None
         self.previous_latents = None
         self.seed = seed
 
-        return self.generate(prompt, negative_prompt, guidance_scale, True, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, interpolation_strength)
+        return self.generate(prompt, negative_prompt, guidance_scale, True, width, height, num_inference_steps, fps, interpolation_strength)
 
 video_gen = VideoGenerator()
 initial_generated = False
@@ -206,17 +171,12 @@ with gr.Blocks() as iface:
         with gr.Column(scale=1):
             prompt = gr.Textbox(label="Prompt", value="Darth Vader is surfing on the ocean")
             negative_prompt = gr.Textbox(label="Negative Prompt", value="")
-            guidance_scale = gr.Slider(label="Guidance Scale", minimum=1.0, maximum=30.0, step=0.1, value=14)
+            guidance_scale = gr.Slider(label="Guidance Scale", minimum=1.0, maximum=30.0, step=0.1, value=12)
 
-            gr.Markdown("## Resolution")
+            gr.Markdown("## Resolution Settings")
 
             width = gr.Slider(label="Width", minimum=576, maximum=1280, step=64, value=1024)
             height = gr.Slider(label="Height", minimum=576, maximum=1280, step=64, value=576)
-
-            gr.Markdown("## Frame Settings")
-
-            num_frames = gr.Slider(label="Number of Frames", minimum=4, maximum=8, step=1, value=6)
-            num_conditioning_frames = gr.Slider(label="Number of Conditioning Frames", minimum=4, maximum=8, step=1, value=4)
 
             gr.Markdown("## Inference Settings")
 
@@ -226,27 +186,27 @@ with gr.Blocks() as iface:
 
             gr.Markdown("## Interpolation")
 
-            interpolation_strength = gr.Slider(label="Interpolation Strength", minimum=0.0, maximum=1.0, step=0.1, value=1.0)
+            interpolation_strength = gr.Slider(label="Interpolation Strength", minimum=0.0, maximum=1.0, step=0.01, value=1.0)
         
         with gr.Column(scale=2):
             video_output = gr.Video(label="Generated Video")
             generate_initial_button = gr.Button("Generate Initial Video")
             extend_button = gr.Button("Extend Video", interactive=False)
 
-        def on_generate_initial(prompt, negative_prompt, guidance_scale, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, seed, interpolation_strength):
+        def on_generate_initial(prompt, negative_prompt, guidance_scale, width, height, num_inference_steps, fps, seed, interpolation_strength):
             global initial_generated
-            video_path = video_gen.reset_and_generate_initial(prompt, negative_prompt, guidance_scale, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, seed, interpolation_strength)
+            video_path = video_gen.reset_and_generate_initial(prompt, negative_prompt, guidance_scale, width, height, num_inference_steps, fps, seed, interpolation_strength)
             initial_generated = True
             return video_path
 
-        def on_extend(prompt, negative_prompt, guidance_scale, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, interpolation_strength):
+        def on_extend(prompt, negative_prompt, guidance_scale, width, height, num_inference_steps, fps, interpolation_strength):
             if initial_generated:
-                return video_gen.generate(prompt, negative_prompt, guidance_scale, False, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, interpolation_strength)
+                return video_gen.generate(prompt, negative_prompt, guidance_scale, False, width, height, num_inference_steps, fps, interpolation_strength)
             return None
 
         generate_initial_button.click(
             on_generate_initial, 
-            inputs=[prompt, negative_prompt, guidance_scale, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, seed, interpolation_strength],
+            inputs=[prompt, negative_prompt, guidance_scale, width, height, num_inference_steps, fps, seed, interpolation_strength],
             outputs=video_output
         ).then(
             lambda: gr.update(interactive=True), 
@@ -255,7 +215,7 @@ with gr.Blocks() as iface:
 
         extend_button.click(
             on_extend, 
-            inputs=[prompt, negative_prompt, guidance_scale, width, height, num_frames, num_conditioning_frames, num_inference_steps, fps, interpolation_strength],
+            inputs=[prompt, negative_prompt, guidance_scale, width, height, num_inference_steps, fps, interpolation_strength],
             outputs=video_output
         )
 
