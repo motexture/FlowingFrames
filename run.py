@@ -169,7 +169,7 @@ with gr.Blocks() as iface:
 
     with gr.Row():
         with gr.Column(scale=1):
-            prompt = gr.Textbox(label="Prompt", value="Darth Vader is surfing on the ocean")
+            prompt = gr.Textbox(label="Prompt", value="A photo of a beautiful red head girl with blue eyes")
             negative_prompt = gr.Textbox(label="Negative Prompt", value="")
             guidance_scale = gr.Slider(label="Guidance Scale", minimum=1.0, maximum=30.0, step=0.1, value=12)
 
