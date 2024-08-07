@@ -1,7 +1,5 @@
 import torch
 import random
-import subprocess
-import json
 import numpy as np
 import cv2
 import os
@@ -11,18 +9,6 @@ from pipeline.flowing_frames import FlowingFramesPipeline
 from diffusers.models.attention import BasicTransformerBlock
 from diffusers.models.attention_processor import AttnProcessor2_0
 from diffusers import DPMSolverMultistepScheduler
-
-def match_contrast_and_brightness(current_latents, previous_latents):
-    prev_mean = previous_latents.mean(axis=(0, 2, 3, 4), keepdims=True)
-    prev_std = previous_latents.std(axis=(0, 2, 3, 4), keepdims=True)
-
-    current_mean = current_latents.mean(axis=(0, 2, 3, 4), keepdims=True)
-    current_std = current_latents.std(axis=(0, 2, 3, 4), keepdims=True)
-
-    adjusted_latents = (current_latents - current_mean) * (prev_std / (current_std + 1e-8)) + prev_mean
-    adjusted_latents = adjusted_latents.clip(-1, 1)
-    
-    return adjusted_latents
 
 def denormalize(normalized_tensor):
     if normalized_tensor.is_cuda:
@@ -95,6 +81,12 @@ class VideoGenerator:
 
         return pipeline
 
+    def scale_latents_to_range(self, latents, min_val=-1, max_val=1):
+        min_latent = latents.min()
+        max_latent = latents.max()
+        scaled_latents = (latents - min_latent) / (max_latent - min_latent) * (max_val - min_val) + min_val
+        return scaled_latents
+
     def generate(self, prompt, negative_prompt, guidance_scale, reset, width, height, num_inference_steps, fps, interpolation_strength):
         if self.seed != -1:
             set_seed(self.seed)
@@ -112,7 +104,7 @@ class VideoGenerator:
                 previous_latents=self.previous_latents,
                 interpolation_strength=interpolation_strength
             )
-            
+
             if self.stacked_latents is not None:
                 self.stacked_latents = torch.cat((self.stacked_latents, latents), dim=2)
                 if self.stacked_latents.size(2) > 6 * 2:
@@ -123,10 +115,16 @@ class VideoGenerator:
 
             if reset:
                 self.generate(prompt, negative_prompt, guidance_scale, False, width, height, num_inference_steps, fps, interpolation_strength)
-
+            
             save_video(self.decode(self.stacked_latents[:, :, 7:, :, :]), self.video_path, fps)
 
             return self.video_path
+        
+    def normalize_latents(self, latents):
+        mean = latents.mean(dim=[2, 3, 4], keepdim=True)
+        std = latents.std(dim=[2, 3, 4], keepdim=True)
+        normalized_latents = (latents - mean) / (std + 1e-5)
+        return normalized_latents
         
     def decode(self, latents):
         latents = 1 / self.pipeline.vae.config.scaling_factor * latents
@@ -205,7 +203,7 @@ with gr.Blocks() as iface:
             return None
 
         generate_initial_button.click(
-            on_generate_initial, 
+            on_generate_initial,
             inputs=[prompt, negative_prompt, guidance_scale, width, height, num_inference_steps, fps, seed, interpolation_strength],
             outputs=video_output
         ).then(
@@ -214,7 +212,7 @@ with gr.Blocks() as iface:
         )
 
         extend_button.click(
-            on_extend, 
+            on_extend,
             inputs=[prompt, negative_prompt, guidance_scale, width, height, num_inference_steps, fps, interpolation_strength],
             outputs=video_output
         )

@@ -7,4 +7,3 @@ torch==2.4.0+cu121
 torchvision
 torchaudio
 transformers==4.42.3
-xformers
