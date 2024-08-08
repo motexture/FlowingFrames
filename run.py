@@ -189,7 +189,7 @@ with gr.Blocks() as iface:
         with gr.Column(scale=2):
             video_output = gr.Video(label="Generated Video")
             generate_initial_button = gr.Button("Generate Initial Video")
-            extend_button = gr.Button("Extend Video", interactive=False)
+            extend_button = gr.Button("Extend Current Video", interactive=False)
 
         def on_generate_initial(prompt, negative_prompt, guidance_scale, width, height, num_inference_steps, fps, seed, interpolation_strength):
             global initial_generated
