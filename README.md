@@ -38,9 +38,6 @@ https://github.com/user-attachments/assets/944650e1-e771-4d4d-bdc8-5a88a1761e26
 https://github.com/user-attachments/assets/7a565436-a777-486f-a18b-ec0ae82c8842
 
 
-https://github.com/user-attachments/assets/07e4b5f0-2924-4162-9ccb-0fd73d3d29f1
-
-
 ## Extras
 
 You can use this GPT to generate highly detailed image prompts -> [Image Prompter](https://chatgpt.com/g/g-rRGhg9gA6-image-prompter)
